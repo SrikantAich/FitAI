@@ -1,0 +1,22 @@
+<resources>
+	<string name="app_name">FitAI</string>
+
+	<!-- Buttons -->
+	<string name="action_go">Ask</string>
+
+	<!-- Screen Title -->
+	<string name="fitness_title">Fitness with Gemini</string>
+
+	<!-- Input -->
+	<string name="label_prompt">Your Fitness Question</string>
+	<string name="prompt_placeholder">Suggest a quick 15-minute home workout</string>
+
+	<!-- Placeholder Results -->
+	<string name="results_placeholder">(Results will appear here)</string>
+
+	<!-- Optional image descriptions (if using images later) -->
+	<string name="image1_description">Yoga Pose</string>
+	<string name="image2_description">Dumbbells</string>
+	<string name="image3_description">Treadmill</string>
+	<string name="action_ask">\nAsk\n</string>
+</resources>
