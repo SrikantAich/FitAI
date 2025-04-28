@@ -1,3 +1,4 @@
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,11 +11,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.finalproject.FitnessViewModel
 import com.example.finalproject.UiState
+import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Favorite
 
 @Composable
 fun AIWorkoutPlannerScreen() {
@@ -97,32 +106,62 @@ fun AIWorkoutPlannerScreen() {
 
 @Composable
 fun StatCard(exercise: String) {
-    var isChecked by remember { mutableStateOf(false) }
+    var isClicked by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
-    if (!isChecked) {
-        Card(
+    // Default background color, changing when clicked
+    val cardBackgroundColor = if (isClicked) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+    } else {
+        MaterialTheme.colorScheme.surface
+    }
+
+    // Card layout for the exercise
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(16.dp))
+            .clickable {
+                // Show a toast message when clicked
+//                Toast.makeText(context, "Workout Completed", Toast.LENGTH_SHORT).show()
+                isClicked = !isClicked  // Toggle completion state
+            },
+        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { isChecked = it }, // Update state when clicked
-                    modifier = Modifier.padding(end = 16.dp)
-                )
-                Text(
-                    text = exercise,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
+            // Default icon for workout-related activity
+            Icon(
+                imageVector = Icons.Default.ArrowForward,  // Change to a valid icon
+                contentDescription = "Favorite Icon",
+                modifier = Modifier.size(36.dp).padding(end = 16.dp),
+                tint = if (isClicked) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
+            )
+
+            // Exercise name with conditional styling
+            Text(
+                text = exercise,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = if (isClicked) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
+                    textDecoration = if (isClicked) TextDecoration.LineThrough else TextDecoration.None,
+                    fontWeight = if (isClicked) FontWeight.Light else FontWeight.Bold
+                ),
+                modifier = Modifier.weight(1f)
+            )
+
+            // Checkmark icon when the workout is completed
+            if (isClicked) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = "Completed",
+                    tint = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }

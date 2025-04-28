@@ -1,8 +1,9 @@
 package com.example.finalproject
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.google.firebase.firestore.FirebaseFirestore
+import uploadFitnessData
 
 // SharedPreferences constants
 private const val PREF_NAME = "FitnessPrefs"
@@ -13,55 +14,61 @@ private const val KEY_NAME = "name"
 private const val KEY_AGE = "age"
 private const val KEY_HEIGHT = "height"
 private const val KEY_WEIGHT = "weight"
-private const val KEY_DISTANCE = "distance"  // Added for distance
+private const val KEY_DISTANCE = "distance"
 private const val KEY_CALORIES = "calories"
 private const val KEY_IS_LOGGED_IN = "isLoggedIn"
+private const val KEY_GOAL = "goal"
 
-
-fun saveDistanceAndCalories(context: Context, distance: Float, calories: Int) {
-    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-
-    // Save the data using the editor returned by the edit block
-    sharedPreferences.edit().apply {
-        putFloat(KEY_DISTANCE, distance)  // Save distance
-        putInt(KEY_CALORIES, calories)    // Save calories
-        apply() // Apply changes
-    }
-}
-fun getSavedDistance(context: Context): Float {
-    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    return sharedPreferences.getFloat(KEY_DISTANCE, 0f) // Default to 0f if not found
-}
-
-fun getSavedCalories(context: Context): Int {
-    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
-    return sharedPreferences.getInt(KEY_CALORIES, 0) // Default to 0 if not found
-}
-
-fun saveGoal(context: Context, goal: Int) {
-    val sharedPreferences = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
-    sharedPreferences.edit() {
-        putInt("goal", goal)
-    }
-}
-
-fun getSavedGoal(context: Context): Int {
-    val sharedPreferences = context.getSharedPreferences("fitness_prefs", Context.MODE_PRIVATE)
-    return sharedPreferences.getInt("goal", 1000) // Default goal if not set
-}
-
-// Save step count
+// Save step count and upload to Firebase
 fun saveStepCount(context: Context, steps: Int) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
         putInt(KEY_STEP_COUNT, steps)
     }
+    uploadFitnessData(context)
 }
 
 // Get step count
 fun getStepCount(context: Context): Int {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     return sharedPreferences.getInt(KEY_STEP_COUNT, 0)
+}
+
+// Save distance and calories, then upload
+fun saveDistanceAndCalories(context: Context, distance: Float, calories: Int) {
+    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    sharedPreferences.edit().apply {
+        putFloat(KEY_DISTANCE, distance)
+        putInt(KEY_CALORIES, calories)
+        apply()
+    }
+    uploadFitnessData(context)
+}
+
+// Get saved distance
+fun getSavedDistance(context: Context): Float {
+    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    return sharedPreferences.getFloat(KEY_DISTANCE, 0f)
+}
+
+// Get saved calories
+fun getSavedCalories(context: Context): Int {
+    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    return sharedPreferences.getInt(KEY_CALORIES, 0)
+}
+
+// Save user fitness goal
+fun saveGoal(context: Context, goal: Int) {
+    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    sharedPreferences.edit {
+        putInt(KEY_GOAL, goal)
+    }
+}
+
+// Get saved fitness goal
+fun getSavedGoal(context: Context): Int {
+    val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    return sharedPreferences.getInt(KEY_GOAL, 1000)
 }
 
 // Save login credentials
@@ -81,8 +88,7 @@ fun getStoredCredentials(context: Context): Pair<String?, String?> {
     return Pair(userId, password)
 }
 
-// Save user profile details (name, age, height, weight)
-// Save user profile details (name, age, height, weight)
+// Save user profile details
 fun saveUserProfile(context: Context, name: String, age: Int, height: Float, weight: Float) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
@@ -91,10 +97,10 @@ fun saveUserProfile(context: Context, name: String, age: Int, height: Float, wei
         putFloat(KEY_HEIGHT, height)
         putFloat(KEY_WEIGHT, weight)
     }
+    uploadFitnessData(context)
 }
 
-
-// Retrieve stored user profile details (name, age, height, weight)
+// Retrieve stored user profile details
 fun getUserProfile(context: Context): UserProfile {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     val name = sharedPreferences.getString(KEY_NAME, "") ?: ""
@@ -102,10 +108,10 @@ fun getUserProfile(context: Context): UserProfile {
     val height = sharedPreferences.getFloat(KEY_HEIGHT, 0f)
     val weight = sharedPreferences.getFloat(KEY_WEIGHT, 0f)
 
-    return UserProfile(name, age, height, weight) // Return the custom UserProfile object
+    return UserProfile(name, age, height, weight)
 }
 
-// Clear all saved preferences (optional utility)
+// Clear all saved preferences
 fun clearAllPreferences(context: Context) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
@@ -113,7 +119,7 @@ fun clearAllPreferences(context: Context) {
     }
 }
 
-// Clear specific user profile data (optional utility)
+// Clear user profile data
 fun clearUserProfile(context: Context) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
@@ -124,7 +130,7 @@ fun clearUserProfile(context: Context) {
     }
 }
 
-// Clear credentials (optional utility)
+// Clear credentials
 fun clearCredentials(context: Context) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
@@ -132,7 +138,8 @@ fun clearCredentials(context: Context) {
         remove(KEY_PASSWORD)
     }
 }
-// -------------------- Login Status --------------------
+
+// Save login status
 fun setLoggedIn(context: Context, isLoggedIn: Boolean) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
@@ -140,14 +147,36 @@ fun setLoggedIn(context: Context, isLoggedIn: Boolean) {
     }
 }
 
+// Check login status
 fun isUserLoggedIn(context: Context): Boolean {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     return sharedPreferences.getBoolean(KEY_IS_LOGGED_IN, false)
 }
 
+// Logout user
 fun logout(context: Context) {
     val sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     sharedPreferences.edit {
         remove(KEY_IS_LOGGED_IN)
     }
+}
+
+// Gather all fitness data into one object
+fun getAllFitnessData(context: Context): FitnessData {
+    val userProfile = getUserProfile(context)
+    val steps = getStepCount(context)
+    val calories = getSavedCalories(context)
+    val distance = getSavedDistance(context)
+    val goal = getSavedGoal(context)
+
+    return FitnessData(
+        name = userProfile.name,
+        age = userProfile.age,
+        height = userProfile.height,
+        weight = userProfile.weight,
+        steps = steps,
+        calories = calories,
+        distance = distance,
+        goal = goal
+    )
 }

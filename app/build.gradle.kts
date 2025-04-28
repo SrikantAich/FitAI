@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -42,7 +44,9 @@ android {
 }
 
 dependencies {
-
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

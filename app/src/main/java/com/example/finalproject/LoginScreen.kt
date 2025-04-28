@@ -49,7 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.layout.Arrangement
 import androidx.navigation.NavHostController
 import com.example.finalproject.ui.theme.FinalProjectTheme
-
+import com.google.firebase.auth.FirebaseAuth
 //import androidx.navigation.compose.navigate
 
 @Composable
@@ -57,6 +57,17 @@ fun LoginScreen(navController: NavHostController) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser // Check if the user is already logged in
+
+    // If the user is already logged in, navigate to fitness screen
+    if (user != null) {
+        LaunchedEffect(Unit) {
+            navController.navigate("fitnessScreen") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -100,7 +111,9 @@ fun LoginScreen(navController: NavHostController) {
             style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
             modifier = Modifier
                 .align(Alignment.End)
-                .clickable { /* TODO: Add forgot password flow */ }
+                .clickable {
+                    // Add forgot password flow here
+                }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -108,16 +121,20 @@ fun LoginScreen(navController: NavHostController) {
         // Login button
         Button(
             onClick = {
-                val (storedEmail, storedPassword) = getStoredCredentials(context)
-
-                if (storedEmail == email && storedPassword == password) {
-                    setLoggedIn(context, true) // Set login flag to true
-                    navController.navigate("fitnessScreen") {
-                        popUpTo("login") { inclusive = true } // Clear back stack
+                // Firebase Authentication login
+                auth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // Login successful
+                            Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
+                            navController.navigate("fitnessScreen") {
+                                popUpTo("login") { inclusive = true }
+                            }
+                        } else {
+                            // Show error message if login fails
+                            Toast.makeText(context, "Invalid credentials: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                } else {
-                    Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT).show()
-                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,7 +145,7 @@ fun LoginScreen(navController: NavHostController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Optional: Sign up
+        // Optional: Sign up link
         Text(
             text = "Don't have an account? Sign Up",
             style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary),

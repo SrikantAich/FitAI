@@ -16,11 +16,14 @@ import androidx.navigation.NavHostController
 
 
 
+import com.google.firebase.auth.FirebaseAuth
+
 @Composable
 fun SignupScreen(navController: NavHostController) {
     var userId by remember { mutableStateOf("") } // Email
     var password by remember { mutableStateOf("") }
     val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
 
     Column(
         modifier = Modifier
@@ -57,12 +60,24 @@ fun SignupScreen(navController: NavHostController) {
         // Sign Up button
         Button(onClick = {
             if (userId.isNotBlank() && password.isNotBlank()) {
-                // Save credentials using PreferenceManager
-                saveCredentials(context, userId, password)
-                Toast.makeText(context, "Signup successful!", Toast.LENGTH_SHORT).show()
+                // Firebase Authentication - create user with email and password
+                auth.createUserWithEmailAndPassword(userId, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // Sign up successful
+                            Toast.makeText(context, "Signup successful!", Toast.LENGTH_SHORT).show()
 
-                // Navigate to the SignUpDetailScreen to fill in additional details
-                navController.navigate("signUpDetailScreen")
+                            // Navigate to the SignUpDetailScreen to fill in additional details
+                            navController.navigate("signUpDetailScreen")
+                        } else {
+                            // Show error message if signup fails
+                            Toast.makeText(
+                                context,
+                                "Signup failed: ${task.exception?.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
             } else {
                 Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
@@ -71,4 +86,3 @@ fun SignupScreen(navController: NavHostController) {
         }
     }
 }
-

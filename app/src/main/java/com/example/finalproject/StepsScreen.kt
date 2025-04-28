@@ -15,10 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 //import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.finalproject.EditableStatCard
-import com.example.finalproject.FitnessViewModel
 import com.example.finalproject.getSavedGoal
 import com.example.finalproject.getStepCount
 import com.example.finalproject.saveGoal
