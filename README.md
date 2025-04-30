@@ -4,6 +4,9 @@ A simple and clean **Fitness Tracking Android App** built using **Jetpack Compos
 Track your steps, calories, and plan your workouts — all from one beautiful dashboard.
 
 ---
+## Project Report
+[AndoirdProjectReportFinal.pdf](https://github.com/user-attachments/files/19976513/AndoirdProjectReportFinal.pdf)
+
 
 ## ✨ Features
 
